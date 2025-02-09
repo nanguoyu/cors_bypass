@@ -1,7 +1,3 @@
-$done({
-    headers: Object.assign($response.headers, {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "*"
-    })
-});
+let headers = $response.headers;
+headers["Access-Control-Allow-Origin"] = "https://visa.vfsglobal.com"; // 只保留一个值
+$done({headers});

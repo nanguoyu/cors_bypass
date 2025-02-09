@@ -1,21 +1,29 @@
-let headers = $response.headers;
+let headers = $request.headers;
 
-// 统一大小写，避免浏览器误解
-if (headers["access-control-allow-origin"]) {
-    delete headers["access-control-allow-origin"];
-}
-if (headers["Access-Control-Allow-Origin"]) {
-    delete headers["Access-Control-Allow-Origin"];
-}
+// 添加用户代理，伪装为普通用户请求
+headers["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36";
 
-// 重新添加正确的 CORS 头
-headers["Access-Control-Allow-Origin"] = "https://visa.vfsglobal.com";
-headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS";
-headers["Access-Control-Allow-Headers"] = "*";
+// 让 Surge 代理原始请求，绕过 CORS
+$httpClient.get({
+    url: $request.url,
+    headers: headers
+}, (error, response, body) => {
+    if (error) {
+        $done({ status: 500, body: "Proxy request failed" });
+    } else {
+        let resHeaders = response.headers;
 
-// 确保 Vary 头不会干扰 CORS
-if (headers["Vary"]) {
-    delete headers["Vary"];
-}
+        // 确保 CORS 头正确
+        resHeaders["Access-Control-Allow-Origin"] = "https://visa.vfsglobal.com";
+        resHeaders["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS";
+        resHeaders["Access-Control-Allow-Headers"] = "*";
 
-$done({headers});
+        // 删除 Cloudflare 相关头，防止 WAF 误判
+        delete resHeaders["set-cookie"];
+        delete resHeaders["cf-ray"];
+        delete resHeaders["cf-cache-status"];
+        delete resHeaders["cf-bm"];
+
+        $done({ status: response.status, headers: resHeaders, body: body });
+    }
+});

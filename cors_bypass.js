@@ -9,7 +9,7 @@ if (headers["Access-Control-Allow-Origin"]) {
 }
 
 // 重新添加正确的 CORS 头
-headers["Access-Control-Allow-Origin"] = "https://visa.vfsglobal.com";
+headers["Access-Control-Allow-Origin"] = "https://1visa.vfsglobal.com";
 headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS";
 headers["Access-Control-Allow-Headers"] = "*";
 
